@@ -1,18 +1,19 @@
-import * as React from 'react'
+import * as React from "react";
 import matter from "gray-matter";
 import ReactMarkdown from "react-markdown";
-import { useCMS, useLocalForm, useWatchFormValues } from 'tinacms'
+import { useCMS, useLocalForm, useWatchFormValues } from "tinacms";
+const axios = require("axios");
+const atob = require("atob");
 
-import Layout from '../../components/Layout'
-import toMarkdownString from '../../utils/toMarkdownString'
+import Layout from "../../components/Layout";
+import toMarkdownString from "../../utils/toMarkdownString";
 
 export default function BlogTemplate(props) {
-
   // TINA CMS Config ---------------------------
-  const cms = useCMS()
+  const cms = useCMS();
   const [post, form] = useLocalForm({
     id: props.fileRelativePath, // needs to be unique
-    label: 'Edit Post',
+    label: "Edit Post",
 
     // starting values for the post object
     initialValues: {
@@ -25,38 +26,37 @@ export default function BlogTemplate(props) {
     fields: [
       {
         label: "Hero Image",
-        name: 'frontmatter.hero_image',
+        name: "frontmatter.hero_image",
         component: "image",
         // Generate the frontmatter value based on the filename
         parse: filename => `../static/${filename}`,
-  
+
         // Decide the file upload directory for the post
         uploadDir: () => "/src/static/",
-  
+
         // Generate the src attribute for the preview image.
-        previewSrc: data => `/static/${data.frontmatter.hero_image}`,
+        previewSrc: data => `/static/${data.frontmatter.hero_image}`
       },
       {
-        name: 'frontmatter.title',
-        label: 'Title',
-        component: 'text',
+        name: "frontmatter.title",
+        label: "Title",
+        component: "text"
       },
       {
-        name: 'frontmatter.date',
-        label: 'Date',
-        component: 'date',
+        name: "frontmatter.date",
+        label: "Date",
+        component: "date"
       },
       {
-        name: 'frontmatter.author',
-        label: 'Author',
-        component: 'text',
+        name: "frontmatter.author",
+        label: "Author",
+        component: "text"
       },
       {
-        name: 'markdownBody',
-        label: 'Blog Body',
-        component: 'markdown',
-      },
-      
+        name: "markdownBody",
+        label: "Blog Body",
+        component: "markdown"
+      }
     ],
 
     // save & commit the file when the "save" button is pressed
@@ -64,59 +64,57 @@ export default function BlogTemplate(props) {
       return cms.api.git
         .writeToDisk({
           fileRelativePath: props.fileRelativePath,
-          content: toMarkdownString(formState.values),
+          content: toMarkdownString(formState.values)
         })
         .then(() => {
           return cms.api.git.commit({
             files: [props.fileRelativePath],
-            message: `Commit from Tina: Update ${data.fileRelativePath}`,
-          })
-        })
-    },
-  })
+            message: `Commit from Tina: Update ${data.fileRelativePath}`
+          });
+        });
+    }
+  });
 
   const writeToDisk = React.useCallback(formState => {
     cms.api.git.onChange({
       fileRelativePath: props.fileRelativePath,
-      content: toMarkdownString(formState.values),
-    })
-  }, [])
+      content: toMarkdownString(formState.values)
+    });
+  }, []);
 
-  useWatchFormValues(form, writeToDisk)
+  useWatchFormValues(form, writeToDisk);
 
-// END Tina CMS config -----------------------------
+  // END Tina CMS config -----------------------------
 
   function reformatDate(fullDate) {
-    const date = new Date(fullDate)
+    const date = new Date(fullDate);
     return date.toDateString().slice(4);
   }
 
   return (
     <Layout siteTitle={props.title}>
       <article className="blog">
-          <figure className="blog__hero">
+        <figure className="blog__hero">
           <img
-              src={post.frontmatter.hero_image}
-              alt={`blog_hero_${post.frontmatter.title}`}
+            src={post.frontmatter.hero_image}
+            alt={`blog_hero_${post.frontmatter.title}`}
           />
-          </figure>
-          <div className="blog__info">
+        </figure>
+        <div className="blog__info">
           <h1>{post.frontmatter.title}</h1>
           <h3>{reformatDate(post.frontmatter.date)}</h3>
-          </div>
-          <div className="blog__body">
+        </div>
+        <div className="blog__body">
           <ReactMarkdown source={post.markdownBody} />
-          </div>
-          <h2 className="blog__footer">
-          Written By: {post.frontmatter.author}
-          </h2>
+        </div>
+        <h2 className="blog__footer">Written By: {post.frontmatter.author}</h2>
       </article>
       <style jsx>
         {`
           .blog h1 {
-            margin-bottom: .7rem;
+            margin-bottom: 0.7rem;
           }
-          
+
           .blog__hero {
             min-height: 300px;
             height: 60vh;
@@ -131,7 +129,7 @@ export default function BlogTemplate(props) {
             min-width: 100%;
             object-position: center;
           }
-          
+
           .blog__info {
             padding: 1.5rem 1.25rem;
             width: 100%;
@@ -144,7 +142,7 @@ export default function BlogTemplate(props) {
           .blog__info h3 {
             margin-bottom: 0;
           }
-          
+
           .blog__body {
             width: 100%;
             padding: 0 1.25rem;
@@ -173,7 +171,7 @@ export default function BlogTemplate(props) {
             margin-bottom: 1.25rem;
             padding-left: 1.45rem;
           }
-          
+
           .blog__footer {
             display: flex;
             justify-content: space-between;
@@ -194,7 +192,7 @@ export default function BlogTemplate(props) {
           .blog__footer a svg {
             width: 20px;
           }
-          
+
           @media (min-width: 768px) {
             .blog {
               display: flex;
@@ -228,7 +226,7 @@ export default function BlogTemplate(props) {
               padding: 2.25rem;
             }
           }
-          
+
           @media (min-width: 1440px) {
             .blog__hero {
               height: 70vh;
@@ -241,21 +239,27 @@ export default function BlogTemplate(props) {
             }
           }
         `}
-        
       </style>
     </Layout>
-    );
+  );
 }
 
 BlogTemplate.getInitialProps = async function(ctx) {
-  const { slug } = ctx.query
-  const content = await import(`../../posts/${slug}.md`)
-  const config = await import(`../../data/config.json`)
-  const data = matter(content.default);
+  const { slug } = ctx.query;
+  // const content = await import(`../../posts/${slug}.md`)
+
+  const branch = ctx.query.branch || "master";
+  const post = await axios({
+    method: "GET",
+    url: `https://api.github.com/repos/jamespohalloran/brevifolia-next-tinacms/contents/src/posts/${slug}.md?client_id=${process.env.GITHUB_APP_CLIENT_ID}&client_secret=${process.env.GITHUB_APP_CLIENT_SECRET}&ref=${branch}`
+  });
+
+  const config = await import(`../../data/config.json`);
+  const data = matter(atob(post.data.content));
 
   return {
     fileRelativePath: `src/posts/${slug}.md`,
     title: config.title,
     ...data
-  }
-}
+  };
+};
