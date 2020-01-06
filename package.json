@@ -11,7 +11,7 @@
     "develop": "yarn dev",
     "build": "next build src",
     "start-next": "next start src",
-    "start": "cross-env NODE_ENV=production node server.js",
+    "start": "node server.js",
     "export": "next export src",
     "deploy": "yarn build && yarn export",
     "forestry-preview": "next src -p 8080 -H 0.0.0.0"
