@@ -16,11 +16,10 @@ const handle = app.getRequestHandler();
 app.prepare().then(() => {
   const server = express();
 
-  server.use(cors());
   server.use(cookieParser());
   server.use(teams.router());
   server.use("/___tina", gitApi.router());
-
+  server.use(cors());
   server.all("*", (req, res) => {
     return handle(req, res);
   });
