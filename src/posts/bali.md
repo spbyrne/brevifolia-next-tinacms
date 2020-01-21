@@ -1,6 +1,6 @@
 ---
 author: Siddhartha Mukherjee
-date: '2019-07-10T07:00:00.000Z'
+date: 2020-01-01T00:00:00.000Z
 hero_image: ../static/alfons-taekema-bali.jpg
 title: "Bali â\x80\x94body, mind & SEOL"
 ---
