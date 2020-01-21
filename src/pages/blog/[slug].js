@@ -70,11 +70,7 @@ export default function BlogTemplate(props) {
           message: "Update from TinaCMS",
           content: btoa(toMarkdownString(data)),
           sha: props.sha,
-          branch: props.branch,
-          committer: {
-            name: "James OHalloran",
-            email: "james.p.ohalloran@gmail.com"
-          }
+          branch: props.branch
         }
       }).then(window.location.reload()); //hack so sha updates
     }
