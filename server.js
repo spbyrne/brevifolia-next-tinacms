@@ -58,7 +58,7 @@ function router() {
       .then(tokenResp => {
         const { access_token } = qs.parse(tokenResp.data);
         res.cookie(GITHUB_AUTH_COOKIE_KEY, access_token);
-        res.redirect(`http://localhost:3000`);
+        res.redirect(`/`);
       });
   });
 
