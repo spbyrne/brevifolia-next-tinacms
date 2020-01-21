@@ -32,7 +32,10 @@ function validateToken(req, res, next) {
 
   if (!token) {
     res.redirect(
-      `https://github.com/apps/${process.env.TINA_GITHUB_APP_NAME}/installations/new`
+      `https://github.com/login/oauth/authorize?${qs.stringify({
+        scope: "public_repo",
+        client_id: process.env.GITHUB_CLIENT_ID
+      })}`
     );
     return;
   }
