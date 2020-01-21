@@ -4,6 +4,8 @@ import ReactMarkdown from "react-markdown";
 import { useCMS, useLocalForm, useWatchFormValues } from "tinacms";
 const axios = require("axios");
 const atob = require("atob");
+const btoa = require("btoa");
+const qs = require("qs");
 
 import Layout from "../../components/Layout";
 import toMarkdownString from "../../utils/toMarkdownString";
@@ -61,28 +63,22 @@ export default function BlogTemplate(props) {
 
     // save & commit the file when the "save" button is pressed
     onSubmit(data) {
-      return cms.api.git
-        .writeToDisk({
-          fileRelativePath: props.fileRelativePath,
-          content: toMarkdownString(data)
-        })
-        .then(() => {
-          return cms.api.git.commit({
-            files: [props.fileRelativePath],
-            message: `Commit from Tina: Update ${data.fileRelativePath}`
-          });
-        });
+      return axios({
+        method: "PUT",
+        url: `https://api.github.com/repos/jamespohalloran/brevifolia-next-tinacms/contents/${data.fileRelativePath}?access_token=${props.access_token}`,
+        data: {
+          message: "Update from TinaCMS",
+          content: btoa(toMarkdownString(data)),
+          sha: props.sha,
+          branch: props.branch,
+          committer: {
+            name: "James OHalloran",
+            email: "james.p.ohalloran@gmail.com"
+          }
+        }
+      }).then(window.location.reload()); //hack so sha updates
     }
   });
-
-  const writeToDisk = React.useCallback(formState => {
-    cms.api.git.onChange({
-      fileRelativePath: props.fileRelativePath,
-      content: toMarkdownString(formState.values)
-    });
-  }, []);
-
-  useWatchFormValues(form, writeToDisk);
 
   // END Tina CMS config -----------------------------
 
@@ -261,6 +257,9 @@ BlogTemplate.getInitialProps = async function(ctx) {
   return {
     fileRelativePath: `src/posts/${slug}.md`,
     title: config.title,
+    branch,
+    sha: post.data.sha,
+    access_token,
     ...data
   };
 };
