@@ -2,6 +2,8 @@ import * as React from "react";
 import matter from "gray-matter";
 import ReactMarkdown from "react-markdown";
 import { useCMS, useLocalForm, useWatchFormValues } from "tinacms";
+const axios = require("axios");
+const atob = require("atob");
 
 import Layout from "../../components/Layout";
 import toMarkdownString from "../../utils/toMarkdownString";
@@ -244,9 +246,17 @@ export default function BlogTemplate(props) {
 
 BlogTemplate.getInitialProps = async function(ctx) {
   const { slug } = ctx.query;
-  const content = await import(`../../posts/${slug}.md`);
+
+  const access_token = ctx.req.cookies["tina-github-auth"];
+
+  const branch = ctx.query.branch || "master";
+  const post = await axios({
+    method: "GET",
+    url: `https://api.github.com/repos/jamespohalloran/brevifolia-next-tinacms/contents/src/posts/${slug}.md?access_token=${access_token}&ref=${branch}`
+  });
+
   const config = await import(`../../data/config.json`);
-  const data = matter(content.default);
+  const data = matter(atob(post.data.content));
 
   return {
     fileRelativePath: `src/posts/${slug}.md`,
