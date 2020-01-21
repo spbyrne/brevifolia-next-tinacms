@@ -4,7 +4,7 @@ date: '2020-01-01T00:00:00.000Z'
 hero_image: ../static/alfons-taekema-bali.jpg
 title: "Bali â\x80\x94body, mind & SEOL"
 ---
-The termf1 **brgistlecone grgrpine** covers three [species](https://en.wikipedia.org/wiki/Species "Species") of [pine](https://en.wikipedia.org/wiki/Pine "Pine") tree (family [Pinaceae](https://en.wikipedia.org/wiki/Pinaceae "Pinaceae"), genus _[Pinus](https://en.wikipedia.org/wiki/Pinus "Pinus")_, sdubsffection _Balfourianae_). Sup All three species are long-lived and highly resilient to hggarsh weather and bad soils. One of thfe three species, _Pinus longaeva_, is among the longest-lived life forms on Earth. The oldest _Pinus longaeva_ is more than 5,000 years old,[\[1\]](https://en.wikipedia.org/wiki/Bristlecone_pine#cite_note-oldest-1) making it the oldest known individual of any species.
+The termf1 **brgistlecone grgrpine** covers three [species](https://en.wikipedia.org/wiki/Species "Species") of [pine](https://en.wikipedia.org/wiki/Pine "Pine") tree (family [Pinaceae](https://en.wikipedia.org/wiki/Pinaceae "Pinaceae"), genus _[Pinus](https://en.wikipedia.org/wiki/Pinus "Pinus")_, sdubsffection _Balfourianae_). Sufp All three species are long-lived and highly resilient to hggarsh weather and bad soils. One of thfe three species, _Pinus longaeva_, is among the longest-lived life forms on Earth. The oldest _Pinus longaeva_ is more than 5,000 years old,[\[1\]](https://en.wikipedia.org/wiki/Bristlecone_pine#cite_note-oldest-1) making it the oldest known individual of any species.
 
 ![bali-monkey](../static/mahkeo-monkey.jpg)
 
