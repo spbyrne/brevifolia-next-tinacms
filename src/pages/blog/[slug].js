@@ -1,18 +1,19 @@
-import * as React from "react";
+import React, { useState } from "react";
 import matter from "gray-matter";
 import ReactMarkdown from "react-markdown";
 import { useCMS, useLocalForm, useWatchFormValues } from "tinacms";
 const axios = require("axios");
 const atob = require("atob");
 const btoa = require("btoa");
-const qs = require("qs");
 
 import Layout from "../../components/Layout";
 import toMarkdownString from "../../utils/toMarkdownString";
 
 export default function BlogTemplate(props) {
+  const sha = props.sha;
   // TINA CMS Config ---------------------------
   const cms = useCMS();
+
   const [post, form] = useLocalForm({
     id: props.fileRelativePath, // needs to be unique
     label: "Edit Post",
@@ -21,7 +22,8 @@ export default function BlogTemplate(props) {
     initialValues: {
       fileRelativePath: props.fileRelativePath,
       frontmatter: props.data,
-      markdownBody: props.content
+      markdownBody: props.content,
+      sha
     },
 
     // field definition
@@ -62,17 +64,24 @@ export default function BlogTemplate(props) {
     ],
 
     // save & commit the file when the "save" button is pressed
-    onSubmit(data) {
+    onSubmit(data, form) {
+      console.log("SAVE", data);
       return axios({
         method: "PUT",
-        url: `https://api.github.com/repos/jamespohalloran/brevifolia-next-tinacms/contents/${data.fileRelativePath}?access_token=${props.access_token}`,
+        url: `https://api.github.com/repos/${props.forkOwnerRepo}/contents/${data.fileRelativePath}?access_token=${props.access_token}`,
         data: {
           message: "Update from TinaCMS",
           content: btoa(toMarkdownString(data)),
-          sha: props.sha,
+          sha: data.sha,
           branch: props.branch
         }
-      }).then(window.location.reload()); //hack so sha updates
+      }).then(response => {
+        window.location.reload();
+        // console.log("set sha " + response.data.content.sha);
+        // console.log(`formdata`, form);
+        // form.change("sha", response.data.content.sha);
+        // console.log({ formAfter: form.getState().values });
+      }); //hack so sha updates
     }
   });
 
@@ -240,11 +249,13 @@ BlogTemplate.getInitialProps = async function(ctx) {
   const { slug } = ctx.query;
 
   const access_token = ctx.req.cookies["tina-github-auth"];
+  const forkOwnerRepo = ctx.req.cookies["tina-github-fork-name"];
 
+  console.log(`forkOwnerRepo ${forkOwnerRepo}`);
   const branch = ctx.query.branch || "master";
   const post = await axios({
     method: "GET",
-    url: `https://api.github.com/repos/jamespohalloran/brevifolia-next-tinacms/contents/src/posts/${slug}.md?access_token=${access_token}&ref=${branch}`
+    url: `https://api.github.com/repos/${forkOwnerRepo}/contents/src/posts/${slug}.md?access_token=${access_token}&ref=${branch}`
   });
 
   const config = await import(`../../data/config.json`);
@@ -256,6 +267,7 @@ BlogTemplate.getInitialProps = async function(ctx) {
     branch,
     sha: post.data.sha,
     access_token,
+    forkOwnerRepo,
     ...data
   };
 };

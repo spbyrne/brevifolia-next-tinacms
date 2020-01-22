@@ -6,6 +6,7 @@ const teams = require("@tinacms/teams");
 const cookieParser = require("cookie-parser");
 const axios = require("axios");
 const qs = require("qs");
+const path = require("path");
 // const router = require("./src/github/router");
 const port = parseInt(process.env.PORT, 10) || 3000;
 const dev = process.env.NODE_ENV !== "production";
@@ -23,6 +24,7 @@ https://github.com/expressjs/cookie-parser
 `;
 
 const GITHUB_AUTH_COOKIE_KEY = "tina-github-auth";
+const GITHUB_FORK_COOKIE_KEY = "tina-github-fork-name";
 
 function validateToken(req, res, next) {
   if (!req.cookies) {
@@ -43,7 +45,7 @@ function validateToken(req, res, next) {
   next();
 }
 
-function router() {
+function githubAuthrouter() {
   const router = express.Router();
 
   router.get("/github/authorized", async (req, res) => {
@@ -70,11 +72,60 @@ function router() {
   return router;
 }
 
+function githubForkrouter() {
+  const router = express.Router();
+
+  router.get("/github/fork", async (req, res) => {
+    console.log("creating a fork");
+
+    const ownerRepo = decodeURI(req.query.owner_repo);
+
+    axios
+      .post(
+        `https://api.github.com/repos/${ownerRepo}/forks?${qs.stringify({
+          access_token: req.cookies["tina-github-auth"]
+        })}`
+      )
+      .then(forkResp => {
+        console.log("created fork");
+        const { full_name } = qs.parse(forkResp.data);
+        res.cookie(GITHUB_FORK_COOKIE_KEY, decodeURI(full_name));
+        res.redirect(`/`);
+      })
+      .catch(e => {
+        console.error(e);
+      });
+  });
+
+  function createFork(req, res, next) {
+    if (!req.cookies) {
+      throw new Error(NO_COOKIES_ERROR);
+    }
+    const forkUrl = req.cookies[GITHUB_FORK_COOKIE_KEY];
+
+    if (!forkUrl) {
+      const unauthorizedView = path.join(
+        __dirname,
+        "src/public/static/request-fork.html"
+      );
+      res.sendFile(unauthorizedView);
+      return;
+    }
+
+    next();
+  }
+
+  router.use(createFork);
+
+  return router;
+}
+
 app.prepare().then(() => {
   const server = express();
 
   server.use(cookieParser());
-  server.use(router());
+  server.use(githubAuthrouter());
+  server.use(githubForkrouter());
   server.use("/___tina", gitApi.router());
   server.use(cors());
   server.all("*", (req, res) => {
