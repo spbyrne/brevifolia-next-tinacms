@@ -1,13 +1,63 @@
-import React, { useState } from "react";
+import React, { useMemo } from "react";
 import matter from "gray-matter";
 import ReactMarkdown from "react-markdown";
 import { useCMS, useLocalForm, useWatchFormValues } from "tinacms";
+import { usePlugins, ScreenPlugin } from "tinacms";
 const axios = require("axios");
 const atob = require("atob");
 const btoa = require("btoa");
 
 import Layout from "../../components/Layout";
 import toMarkdownString from "../../utils/toMarkdownString";
+
+export class PRPlugin {
+  constructor(ownerRepo, branch, accessToken) {
+    this.__type = "screen";
+    this.name = "Create Pull Request";
+    this.Icon = () => <>🚀</>;
+    this.layout = "popup";
+    this.state = {
+      responseMessage: ""
+    };
+
+    this.createPR = () => {
+      return axios({
+        method: "POST",
+        url: `https://api.github.com/repos/jamespohalloran/brevifolia-next-tinacms/pulls?access_token=${accessToken}`,
+        data: {
+          title: "Update from TinaCMS",
+          body: "Please pull these awesome changes in!",
+          head: `${ownerRepo.split("/")[0]}:${branch}`,
+          base: branch
+        }
+      })
+        .then(response => {
+          alert(`you made a PR!: ${response.data.html_url}`);
+        })
+        .catch(err => {
+          alert(
+            `PR failed (Has a PR already been created?): ${JSON.stringify(err)}`
+          );
+        });
+    };
+
+    this.Component = () => {
+      return (
+        <div>
+          <p>
+            This will create a PR from {ownerRepo} - {branch} into {ownerRepo} -{" "}
+            {branch}
+          </p>
+          <button onClick={this.createPR}>Create PR</button>
+
+          <div>{this.state.responseMessage}</div>
+        </div>
+      );
+    };
+  }
+}
+
+const brancher = new PRPlugin();
 
 export default function BlogTemplate(props) {
   const sha = props.sha;
@@ -84,6 +134,20 @@ export default function BlogTemplate(props) {
       }); //hack so sha updates
     }
   });
+
+  function usePRPlugin() {
+    const brancher = useMemo(() => {
+      return new PRPlugin(
+        props.forkOwnerRepo,
+        props.branch,
+        props.access_token
+      );
+    }, [props.forkOwnerRepo, props.branch, props.access_token]);
+
+    usePlugins(brancher);
+  }
+
+  usePRPlugin();
 
   // END Tina CMS config -----------------------------
 
